@@ -1,0 +1,6 @@
+[package]
+name = "badcrypt"
+version = "0.1.0"
+authors = ["Allan Calix <contact@allancalix.com>"]
+
+[dependencies]
