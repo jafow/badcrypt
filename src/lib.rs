@@ -1,3 +1,5 @@
+pub mod xor;
+
 pub trait FromHex: Sized {
     type Error;
 
