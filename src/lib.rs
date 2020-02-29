@@ -26,9 +26,9 @@ impl FromHex for Vec<u8> {
             buf <<= 4;
 
             match *byte {
-                b'A'...b'F' => buf |= byte - b'A' + 10,
-                b'a'...b'f' => buf |= byte - b'a' + 10,
-                b'0'...b'9' => buf |= byte - b'0',
+                b'A'..=b'F' => buf |= byte - b'A' + 10,
+                b'a'..=b'f' => buf |= byte - b'a' + 10,
+                b'0'..=b'9' => buf |= byte - b'0',
                 _ => {
                     return Err(FromHexError::InvalidHexCharacter {
                         c: bytes[i] as char,
@@ -54,6 +54,19 @@ impl FromHex for Vec<u8> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Base64 (Vec<u8>);
 
+impl Base64 {
+    pub fn fixed_xor(&self, x: Base64) -> Base64 {
+        let mut xor = vec!();
+        for (i, v) in self.0.iter().enumerate() {
+            // Panics if compared against buffer with a different length.
+            let cmp = x.0.get(i).unwrap();
+            xor.push(v ^ cmp);
+        }
+        assert!(xor.len() == self.0.len());
+        Base64::from(xor)
+    }
+}
+
 impl From<Vec<u8>> for Base64 {
     fn from(v: Vec<u8>) -> Self {
         Base64(v.clone())
@@ -62,9 +75,9 @@ impl From<Vec<u8>> for Base64 {
 
 fn map_u8_to_base64(x: u8) -> char {
     match x {
-        0...25 => (x + 65) as char,
-        26...51 => ((x - 26) + 97) as char,
-        52...61 => ((x - 52) + 48) as char,
+        0..=25 => (x + 65) as char,
+        26..=51 => ((x - 26) + 97) as char,
+        52..=61 => ((x - 52) + 48) as char,
         62 => '+',
         63 => '/',
         _ => '=',
@@ -159,5 +172,14 @@ mod tests {
         let buf = Vec::from_hex("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d").unwrap();
         let test = Base64::from(buf);
         assert_eq!(test.to_string(), "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t".to_string());
+    }
+
+    #[test]
+    fn test_cryptopals_fixed_xor() {
+        let in_one = Base64::from(Vec::from_hex("1c0111001f010100061a024b53535009181c").unwrap());
+        let in_two = Base64::from(Vec::from_hex("686974207468652062756c6c277320657965").unwrap());
+        let xor = in_one.fixed_xor(in_two);
+
+        assert_eq!(hex::encode(xor.0), "746865206b696420646f6e277420706c6179".to_string())
     }
 }
