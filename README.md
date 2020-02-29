@@ -22,3 +22,28 @@ mapping but I chose to use the **hex** crate to reencode the result.
 I may revisit this encoding later.
 
 ## 1.3 - Single Byte XOR Cipher
+
+This was a fun challenge. I repeatedly was confused by base64 and the hex strings
+but overall this challange was relatively simple. The challenge suggests using
+character frequency as signal for scoring each resulting string.
+
+I found a table online showing the frequency of each letter in a 40,000 word corpus
+so I naively just applied those frequencies as a score. The highest score wins
+and fortunately this was enough to get the answer.
+
+## 1.4 - Detect single-character XOR
+
+This was a progression of the previous problem with alot more noise than signal.
+In hindsight, I could have done this all with the previous solution and a bit of
+bash.
+
+My previous scoring algorithm was enough to succeed here, returning the highest
+score for each key, sorting the result, and chosing the top.
+
+The one annoying bit is that rust tries to interpret every string as UTF-8, but
+not every decrypted winner was valid. I made the (correct in this case) assumption
+that the message would be a UTF-8 valid message.
+
+```sh
+cargo run --bin 1-4-cipher -- data/1-4-cipher.txt | sort --reverse | head -n 1
+```
