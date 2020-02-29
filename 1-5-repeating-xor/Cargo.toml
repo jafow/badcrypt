@@ -1,0 +1,11 @@
+[package]
+name = "1-5-repeating-xor"
+version = "0.0.0"
+
+[[bin]]
+name = "1-5-repeating-xor"
+path = "./src/main.rs"
+
+[dependencies]
+encode = { path = "../encode" }
+hex = "0.4.2"
