@@ -6,10 +6,7 @@ pub trait FromHex: Sized {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum FromHexError {
-    InvalidHexCharacter {
-        c: char,
-        index: usize,
-    },
+    InvalidHexCharacter { c: char, index: usize },
     InvalidHexLength,
 }
 
@@ -34,7 +31,7 @@ impl FromHex for Vec<u8> {
                         c: bytes[i] as char,
                         index: i,
                     })
-                },
+                }
             }
 
             modulus += 1;
@@ -52,11 +49,11 @@ impl FromHex for Vec<u8> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Base64 (Vec<u8>);
+pub struct Base64(Vec<u8>);
 
 impl Base64 {
     pub fn fixed_xor(&self, x: Base64) -> Base64 {
-        let mut xor = vec!();
+        let mut xor = vec![];
         for (i, v) in self.0.iter().enumerate() {
             // Panics if compared against buffer with a different length.
             let cmp = x.0.get(i).unwrap();
@@ -111,7 +108,7 @@ impl ToString for Base64 {
                         let btail = self.0[i + 1] >> 4;
                         result.push(map_u8_to_base64((bhead | btail) >> 2));
                     }
-                },
+                }
                 2 => result.push(map_u8_to_base64(val << 2 >> 2)),
                 _ => println!("oh no"),
             }
@@ -122,7 +119,7 @@ impl ToString for Base64 {
 
 #[cfg(test)]
 mod tests {
-    use super::{FromHex, FromHexError, Base64};
+    use super::{Base64, FromHex, FromHexError};
 
     #[test]
     fn test_decode_hex_to_bits() {
@@ -131,18 +128,17 @@ mod tests {
 
     #[test]
     fn test_odd_numbered_hex() {
-        assert_eq!(Vec::from_hex("6656C6C6F").unwrap_err(),
+        assert_eq!(
+            Vec::from_hex("6656C6C6F").unwrap_err(),
             FromHexError::InvalidHexLength
         );
     }
 
     #[test]
     fn test_whitespace_in_hex() {
-        assert_eq!(Vec::from_hex("6865 6C6C6F").unwrap_err(),
-            FromHexError::InvalidHexCharacter {
-                c: ' ',
-                index: 4,
-            },
+        assert_eq!(
+            Vec::from_hex("6865 6C6C6F").unwrap_err(),
+            FromHexError::InvalidHexCharacter { c: ' ', index: 4 },
         );
     }
 
@@ -171,7 +167,10 @@ mod tests {
     fn test_cryptopals() {
         let buf = Vec::from_hex("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d").unwrap();
         let test = Base64::from(buf);
-        assert_eq!(test.to_string(), "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t".to_string());
+        assert_eq!(
+            test.to_string(),
+            "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t".to_string()
+        );
     }
 
     #[test]
@@ -180,6 +179,9 @@ mod tests {
         let in_two = Base64::from(Vec::from_hex("686974207468652062756c6c277320657965").unwrap());
         let xor = in_one.fixed_xor(in_two);
 
-        assert_eq!(hex::encode(xor.0), "746865206b696420646f6e277420706c6179".to_string())
+        assert_eq!(
+            hex::encode(xor.0),
+            "746865206b696420646f6e277420706c6179".to_string()
+        )
     }
 }
